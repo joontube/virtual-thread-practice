@@ -1,4 +1,4 @@
-package com.example.demo.purejava;
+package com.example.demo.purejava.virtual;
 
 import lombok.extern.slf4j.Slf4j;
 
