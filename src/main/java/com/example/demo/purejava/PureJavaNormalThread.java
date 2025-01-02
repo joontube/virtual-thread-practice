@@ -1,9 +1,9 @@
-package com.example.demo;
+package com.example.demo.purejava;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class PureJavaNormalThreadApplication {
+public class PureJavaNormalThread {
 
 
     private static final Runnable runnable = new Runnable() {
