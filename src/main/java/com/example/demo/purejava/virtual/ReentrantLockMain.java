@@ -8,24 +8,25 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Slf4j
-public class PinningVirtualThread {
+public class ReentrantLockMain {
 
+    private final ReentrantLock lock = new ReentrantLock();
 
-    //vm옵션에  -Djdk.tracePinnedThreads=full  or -Djdk.tracePinnedThreads=short 를 통해  detect
+    // -Djdk.tracePinnedThreads=full  or -Djdk.tracePinnedThreads=short 를 통해  detect
     private final Runnable runnable = new Runnable() {
         @Override
         public void run() {
+            log.info("1) run. thread: " + Thread.currentThread());
 
-            synchronized (this) {
-                log.info("1) run. thread: " + Thread.currentThread());
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                log.info("2) run. thread: " + Thread.currentThread());
+            lock.lock();
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } finally {
+                lock.unlock();
             }
-
+            log.info("2) run. thread: " + Thread.currentThread());
         }
     };
 
@@ -44,17 +45,16 @@ public class PinningVirtualThread {
         ThreadFactory factory = Thread.ofVirtual().name("myVirtual-", 0).factory();
         try (ExecutorService executorService = Executors.newThreadPerTaskExecutor(factory)) {
             for (int i = 0; i < 20; i++) {
-                PinningVirtualThread pinning = new PinningVirtualThread();
+                ReentrantLockMain pinning = new ReentrantLockMain();
                 executorService.submit(pinning.runnable);
             }
         }
     }
 
-    //일반 스레드
     private static void platform() {
         try (ExecutorService executorService = Executors.newFixedThreadPool(20)) {
             for (int i = 0; i < 20; i++) {
-                PinningVirtualThread pinning = new PinningVirtualThread();
+                ReentrantLockMain pinning = new ReentrantLockMain();
                 executorService.submit(pinning.runnable);
             }
         }
